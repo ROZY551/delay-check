@@ -1,0 +1,9 @@
+# scikit-learn must match the Colab version that saved the model (1.6.1). See docs/setup.md
+streamlit>=1.48
+scikit-learn==1.6.1
+xgboost>=3.0
+pandas
+numpy
+joblib
+requests
+altair
