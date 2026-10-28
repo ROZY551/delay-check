@@ -5,7 +5,7 @@ import pytest
 
 from backend import auth
 from backend.predictor import Predictor, level_of, normalize_flight
-from backend.weather import ms_to_kt, parse_precip, vilage_base, KST
+from backend.weather import KST, WeatherError, get_day_forecast, get_weather, ms_to_kt, parse_precip, vilage_base
 
 
 # ---------- 날씨 ----------
@@ -69,3 +69,29 @@ def test_compare_sorted_and_marks_average_weather(predictor):
     items = predictor.compare("도쿄/나리타", date(2026, 10, 29), {})
     probs = [it["prob"] for it in items]
     assert items and probs == sorted(probs) and all(it["avg_weather"] for it in items)
+
+
+# ---------- 예보 시각 맞추기 (3일 뒤는 3시간 간격) ----------
+class FakeSession:
+    """기상청 대신 정해 둔 예보를 돌려준다: 10월 31일 9시·12시만 있음."""
+    def get(self, url, params, timeout):
+        items = [{"fcstDate": "20261031", "fcstTime": t, "category": c, "fcstValue": v}
+                 for t, wsd in (("0900", "5"), ("1200", "10"))
+                 for c, v in (("TMP", "12"), ("WSD", wsd), ("PCP", "강수없음"), ("SKY", "1"), ("PTY", "0"))]
+        body = {"response": {"header": {"resultCode": "00"}, "body": {"items": {"item": items}}}}
+        return type("Res", (), {"json": lambda self: body})()
+
+
+def test_get_weather_uses_nearest_forecast_hour():
+    now = datetime(2026, 10, 28, 12, 0, tzinfo=KST)
+    w = get_weather(datetime(2026, 10, 31, 10, 0), "key", now=now, session=FakeSession())
+    assert w["풍속"] == ms_to_kt(5) and w["출처"] == "기상청 단기예보 (9시 예보)"
+    with pytest.raises(WeatherError):                                        # 9시·12시에서 2시간 넘게 떨어짐
+        get_weather(datetime(2026, 10, 31, 15, 0), "key", now=now, session=FakeSession())
+
+
+def test_day_forecast_fills_hours_between_3h_steps():
+    now = datetime(2026, 10, 28, 12, 0, tzinfo=KST)
+    f = get_day_forecast(date(2026, 10, 31), "key", now=now, session=FakeSession())
+    assert sorted(f) == [7, 8, 9, 10, 11, 12, 13, 14]
+    assert f[11]["풍속"] == ms_to_kt(10) and f[9]["출처"] == "기상청 단기예보"

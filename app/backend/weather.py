@@ -20,6 +20,7 @@ NX, NY = 51, 124                       # 인천공항 격자 (위도 37.46, 경�
 BASE_URL = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0"
 MS_TO_KT = 1.94384
 VILAGE_HOURS = [2, 5, 8, 11, 14, 17, 20, 23]
+NEAREST_HOURS = 2                      # 그 시각 예보가 없을 때 앞뒤로 찾아볼 범위
 
 SKY = {"1": "맑음", "3": "구름 많음", "4": "흐림"}
 PTY = {"0": "", "1": "비", "2": "비/눈", "3": "눈", "4": "소나기", "5": "빗방울", "6": "빗방울/눈날림", "7": "눈날림"}
@@ -112,10 +113,23 @@ def fetch_items(endpoint: str, base: datetime, key: str, session=None, timeout: 
     return body["body"]["items"]["item"]
 
 
-def _pick(items: list[dict], target: datetime) -> dict[str, str]:
-    d, t = target.strftime("%Y%m%d"), target.strftime("%H00")
-    return {it["category"]: it["fcstValue"] for it in items
-            if it.get("fcstDate") == d and it.get("fcstTime") == t}
+def _by_slot(items: list[dict]) -> dict[datetime, dict[str, str]]:
+    """예보 항목을 {예보 시각: {항목: 값}}으로 묶는다."""
+    out: dict[datetime, dict[str, str]] = {}
+    for it in items:
+        if it.get("fcstDate") and it.get("fcstTime"):
+            at = datetime.strptime(it["fcstDate"] + it["fcstTime"], "%Y%m%d%H%M").replace(tzinfo=KST)
+            out.setdefault(at, {})[it["category"]] = it["fcstValue"]
+    return out
+
+
+def _pick(slots: dict[datetime, dict[str, str]], target: datetime) -> tuple[dict[str, str], datetime | None]:
+    """target 시각의 예보. 없으면 앞뒤 NEAREST_HOURS 안에서 가장 가까운 시각 (3일 뒤는 3시간 간격으로 나온다)."""
+    near = [t for t in slots if abs((t - target).total_seconds()) <= NEAREST_HOURS * 3600]
+    if not near:
+        return {}, None
+    at = min(near, key=lambda t: (abs((t - target).total_seconds()), t))
+    return slots[at], at
 
 
 def _fetch_with_retry(kind: str, endpoint: str, base: datetime, key: str, session=None) -> tuple[list[dict], datetime]:
@@ -147,16 +161,18 @@ def get_weather(target: datetime, key: str, now: datetime | None = None, session
         use_ultra = hours_ahead <= 5
         if use_ultra:
             items, base = _fetch_with_retry("ultra", "getUltraSrtFcst", ultra_fcst_base(now), key, session)
-            v = _pick(items, slot)
+            v, at = _pick(_by_slot(items), slot)
             temp_key, rain_key = "T1H", "RN1"
             source = "기상청 초단기예보"
-        if not use_ultra or not v:
+        if not use_ultra or "WSD" not in v:
             items, base = _fetch_with_retry("vilage", "getVilageFcst", vilage_base(now), key, session)
-            v = _pick(items, slot)
+            v, at = _pick(_by_slot(items), slot)
             temp_key, rain_key = "TMP", "PCP"
             source = "기상청 단기예보"
-        if not v:
+        if "WSD" not in v or temp_key not in v:
             raise WeatherError("이 시각의 예보가 아직 없어요")
+        if at != slot:
+            source += f" ({at.hour}시 예보)"
         pty = PTY.get(v.get("PTY", "0"), "")
         w = {"풍속": ms_to_kt(v.get("WSD", 0)), "기온": float(v.get(temp_key, 0)),
              "강수량": parse_precip(v.get(rain_key, 0)), "하늘": pty or SKY.get(v.get("SKY", ""), "")}
@@ -171,17 +187,16 @@ def get_day_forecast(day, key: str, now: datetime | None = None, session=None) -
     """편 비교용: 그날 0~23시 단기예보를 한 번에. {시: 날씨}"""
     now = (now or datetime.now(KST)).astimezone(KST)
     items, base = _fetch_with_retry("vilage", "getVilageFcst", vilage_base(now), key, session)
-    d = day.strftime("%Y%m%d")
-    by_hour: dict[int, dict[str, str]] = {}
-    for it in items:
-        if it.get("fcstDate") == d:
-            by_hour.setdefault(int(it["fcstTime"][:2]), {})[it["category"]] = it["fcstValue"]
+    slots = _by_slot(items)
     out = {}
-    for h, v in by_hour.items():
+    for h in range(24):
+        slot = datetime(day.year, day.month, day.day, h, tzinfo=KST)
+        v, at = _pick(slots, slot)
         if "TMP" in v and "WSD" in v:
             w = {"풍속": ms_to_kt(v["WSD"]), "기온": float(v["TMP"]), "강수량": parse_precip(v.get("PCP", 0)),
                  "하늘": PTY.get(v.get("PTY", "0"), "") or SKY.get(v.get("SKY", ""), "")}
-            w["출처"], w["발표"] = "기상청 단기예보", base.strftime("%m.%d %H:%M")
+            w["출처"] = "기상청 단기예보" + ("" if at == slot else f" ({at.hour}시 예보)")
+            w["발표"] = base.strftime("%m.%d %H:%M")
             w["설명"] = describe(w)
             out[h] = w
     return out
