@@ -1,7 +1,8 @@
-# scikit-learn must match the Colab version that saved the model (1.6.1). See docs/setup.md
-streamlit>=1.48
+# scikit-learn must match the Colab version that saved the model (1.6.1). See the setup doc linked in README.md
+# streamlit and xgboost are pinned to the versions tested on 2026-10-29 (newer streamlit drops use_container_width)
+streamlit==1.66.1
 scikit-learn==1.6.1
-xgboost>=3.0
+xgboost==3.4.1
 pandas
 numpy
 joblib

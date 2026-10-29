@@ -68,7 +68,7 @@ ICON_SUN = '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12
 ICON_RAIN = '<path d="M7 15a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 7a4 4 0 0 1-1 8z"></path><path d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"></path>'
 ICON_BULB = '<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path>'
 ICON_BARS = '<path d="M4 20V10"></path><path d="M10 20V4"></path><path d="M16 20v-7"></path><path d="M22 20H2"></path>'
-ICON_ANIM = {ICON_SUN: "dc-ic-sun", ICON_RAIN: "dc-ic-rain", ICON_BULB: "dc-ic-bulb", ICON_BARS: "dc-ic-bars"}   # 아이콘마다 다른 움직임 (ui/style.py)
+ICON_ANIM = {ICON_SUN: "dc-ic-sun", ICON_RAIN: "dc-ic-rain", ICON_BULB: "dc-ic-bulb", ICON_BARS: "dc-ic-bars"}   # 아이콘마다 다른 움직임 (frontend/components/style.py)
 
 
 def weather_card(w: dict) -> str:
