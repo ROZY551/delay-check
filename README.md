@@ -1,5 +1,7 @@
 # 딜레이 체크 (DELAY CHECK)
 
+**배포 주소: https://delay-check.streamlit.app**
+
 인천공항 출발 항공편의 **편명 + 출발 날짜 + 출발 시각**을 넣으면, 과거 운항 기록과 기상청 예보로 **지연 확률**을 알려주는 Streamlit 웹앱이에요.
 
 ## 폴더 구조

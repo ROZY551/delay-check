@@ -20,6 +20,8 @@ CSS = """
 <style>
 @import url('%(fonts)s');
 html, body, [class*="st-"], .stMarkdown, button, input, textarea { font-family: 'Noto Sans KR', sans-serif; }
+/* 위 글꼴 지정이 아이콘까지 덮으면 'schedule' 같은 아이콘 이름이 글자로 보인다 → 아이콘 글꼴은 되돌린다 */
+[data-testid="stIconMaterial"], [data-testid$="DynamicIcon"] { font-family: 'Material Symbols Rounded' !important; }
 .stApp { background: %(bg)s; }
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSidebar"],
 [data-testid="stSidebarCollapsedControl"], footer { display: none !important; }
@@ -32,29 +34,41 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .st-key-logo button { background: transparent !important; border: none !important; box-shadow: none !important;
   padding: 4px 0 !important; min-height: 44px; }
 .st-key-logo button p { font-family: 'Montserrat', sans-serif !important; font-style: italic; font-weight: 900 !important;
-  font-size: 27px !important; color: %(navy)s; letter-spacing: -.01em; }
+  font-size: 24px !important; color: %(navy)s; letter-spacing: -.02em; white-space: nowrap; overflow: visible; }
+.st-key-logo button div { overflow: visible; }
 .st-key-logo button p::after { content: '✈'; font-size: 16px; color: %(navy)s; position: relative; top: -14px; left: 2px; }
 [data-testid="stPageLink"] a { min-height: 44px; border-radius: 10px; padding: 0 16px; font-weight: 800; }
 [data-testid="stPageLink"] a p { font-size: 16px; font-weight: 800; color: #2D3748; }
 .st-key-nav_active [data-testid="stPageLink"] a { background: %(navy)s; }
-.st-key-nav_active [data-testid="stPageLink"] a p { color: #FFFFFF; }
+.st-key-nav_active [data-testid="stPageLink"] a p, .st-key-nav_active [data-testid="stIconMaterial"] { color: #FFFFFF; }
 .st-key-nav { background: #EEF2F7; border-radius: 14px; padding: 4px; }
 
 /* 버튼 */
-.stButton button[kind="primary"], .stFormSubmitButton button[kind="primary"] {
+.stButton button[kind="primary"], .stFormSubmitButton button[kind="primaryFormSubmit"] {
   background: %(amber)s; color: %(navy)s; border: none; border-radius: 14px; min-height: 56px; font-weight: 900; font-size: 18px; }
-.stButton button[kind="primary"]:hover, .stFormSubmitButton button[kind="primary"]:hover { background: #F2A900; color: %(navy)s; }
-.stButton button[kind="secondary"] { border-radius: 10px; min-height: 44px; font-weight: 700; }
+.stButton button[kind="primary"]:hover, .stFormSubmitButton button[kind="primaryFormSubmit"]:hover { background: #F2A900; color: %(navy)s; }
+.stButton button[kind="primary"] p, .stFormSubmitButton button[kind="primaryFormSubmit"] p { font-size: 18px; font-weight: 900; }
+.stButton button[kind="secondary"], .stFormSubmitButton button[kind="secondaryFormSubmit"] { border-radius: 10px; min-height: 44px; font-weight: 700; }
+.stButton button[kind="secondary"] p, .stFormSubmitButton button[kind="secondaryFormSubmit"] p { font-size: 16px; font-weight: 700; }
 
-/* 입력 */
+/* 입력 (날짜·시각 칸은 <input>이 아니라 role="group" 안의 글자 조각으로 그려진다) */
 .stTextInput input, .stDateInput input, .stTimeInput input, .stSelectbox div[data-baseweb="select"] > div {
   min-height: 52px; font-size: 18px; font-weight: 700; border-radius: 12px; }
+[data-testid="stDateInput"] [role="group"], [data-testid="stTimeInput"] [role="group"],
+[data-testid="stDateInput"] [role="group"] *, [data-testid="stTimeInput"] [role="group"] *,
+[data-testid="stSelectbox"] input { font-size: 18px !important; font-weight: 700; min-height: 40px; }
+[data-testid="stWidgetLabel"] p { font-size: 16px !important; font-weight: 700; color: #2D3748; }
+[data-testid="stCheckbox"] [data-testid="stWidgetLabel"] p { font-size: 15px !important; font-weight: 500; }
 .st-key-flight_no input { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 800; text-transform: uppercase; }
 
 /* 카드 */
 .card { background: #FFFFFF; border-radius: 18px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(11,37,69,.06); }
 .st-key-search_card { background: #FFFFFF; border-radius: 20px; padding: 20px 26px 8px; margin: -96px 36px 0;
-  position: relative; z-index: 5; box-shadow: 0 12px 32px rgba(11,37,69,.14); }
+  width: calc(100%% - 72px) !important; position: relative; z-index: 5; box-shadow: 0 12px 32px rgba(11,37,69,.14); }
+@media (max-width: 640px) {
+  .st-key-search_card { margin: -64px 8px 0; width: calc(100%% - 16px) !important; padding: 16px 16px 6px; }
+  [data-testid="stMainBlockContainer"] { padding: 0 12px 0; }
+}
 .st-key-chart_card, .st-key-form_card, .st-key-auth_card { background: #FFFFFF; border-radius: 18px; padding: 20px 24px;
   box-shadow: 0 4px 14px rgba(11,37,69,.06); }
 .cmp-row { background: #FFFFFF; }
@@ -85,10 +99,10 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .st-key-nav_active [data-testid="stPageLink"] a:hover { background: %(navy)s; }
 /* 노란 버튼: 올리면 떠오르고 빛이 한 번 지나간다, 누르면 눌린다 */
 .stButton button, .stFormSubmitButton button { transition: transform .18s, box-shadow .18s, background .2s; }
-.stButton button[kind="primary"], .stFormSubmitButton button[kind="primary"] { position: relative; overflow: hidden; }
-.stButton button[kind="primary"]::before, .stFormSubmitButton button[kind="primary"]::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 40%%;
+.stButton button[kind="primary"], .stFormSubmitButton button[kind="primaryFormSubmit"] { position: relative; overflow: hidden; }
+.stButton button[kind="primary"]::before, .stFormSubmitButton button[kind="primaryFormSubmit"]::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 40%%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); transform: translateX(-120%%) skewX(-20deg); pointer-events: none; }
-.stButton button[kind="primary"]:hover::before, .stFormSubmitButton button[kind="primary"]:hover::before { animation: dc-sweep .7s ease; }
+.stButton button[kind="primary"]:hover::before, .stFormSubmitButton button[kind="primaryFormSubmit"]:hover::before { animation: dc-sweep .7s ease; }
 .stButton button:hover:not(:disabled), .stFormSubmitButton button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(11,37,69,.16); }
 .stButton button:active:not(:disabled), .stFormSubmitButton button:active:not(:disabled) { transform: translateY(1px) scale(.98); box-shadow: none; }
 /* 입력칸: 누르면 노란 테두리가 번진다 */
@@ -107,7 +121,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 [data-testid="stVegaLiteChart"], [data-testid="stArrowVegaLiteChart"] { animation: dc-rise 1s cubic-bezier(.2,.8,.2,1) .25s both; }
 
 /* 결과 요약: 카드가 올라오고, 지연 확률 숫자가 0부터 올라가고, 단계 막대 동그라미가 미끄러진다 */
-.dc-summary { animation: dc-up .6s cubic-bezier(.2,.8,.2,1) both; }
+.dc-summary { animation: dc-up .6s cubic-bezier(.2,.8,.2,1) both; margin-bottom: 12px; }
 .dc-count { --dc-n: var(--to); counter-reset: dc var(--dc-n); animation: dc-count 1.2s cubic-bezier(.2,.8,.2,1) .3s both; }
 .dc-count::before { content: counter(dc); }
 .dc-chip { display: inline-block; animation: dc-pop .5s ease 1.3s both; }
@@ -128,6 +142,11 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .dc-cmp-row:hover { background: #F3F7FC !important; }
 .dc-fill { transform-origin: left; animation: dc-grow .9s cubic-bezier(.2,.8,.2,1) both; }
 .dc-star { display: inline-block; animation: dc-pop .5s ease .4s both; }
+/* 휴대폰: 비교 표는 과거 지연율 칸과 막대를 숨기고 편명·시각·확률·단계만 */
+@media (max-width: 640px) {
+  .dc-cmp-row, .dc-cmp-head { grid-template-columns: 22px 1.6fr 1fr .9fr .9fr !important; gap: 8px !important; padding-left: 12px !important; padding-right: 12px !important; }
+  .dc-cmp-row > :nth-child(4), .dc-cmp-head > :nth-child(4), .dc-cmp-row > :nth-child(5) > :first-child { display: none !important; }
+}
 /* 조회 기록 카드도 차례로 올라온다 */
 [data-testid="stVerticalBlockBorderWrapper"]:has(.dc-hist) { animation: dc-up .5s ease both; transition: transform .2s, box-shadow .2s; }
 [data-testid="stVerticalBlockBorderWrapper"]:has(.dc-hist):hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(11,37,69,.10); }
@@ -156,7 +175,7 @@ def header(active: str) -> None:
     """active: home / compare / history / login / signup"""
     user = st.session_state.get("user")
     with st.container(key="topbar"):
-        c_logo, c_nav, c_size, c_user = st.columns([1.5, 3.4, 1.2, 1.9], vertical_alignment="center")
+        c_logo, c_nav, c_size, c_user = st.columns([1.8, 3.6, 1.1, 1.7], vertical_alignment="center")
         with c_logo:
             if st.button("DELAYCHECK", key="logo", help="처음 화면으로"):
                 reset_search()

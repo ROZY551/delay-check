@@ -59,9 +59,10 @@ def summary_card(r: dict) -> str:
 
 def _title(text: str, bg: str, icon: str, stroke: str = "#FFFFFF") -> str:
     anim = ICON_ANIM.get(icon, "")
-    return (f'<h3 style="margin:0 0 12px;display:flex;align-items:center;gap:8px;font-size:18px;font-weight:800;color:#0F1B2D">'
-            f'<span class="{anim}" style="width:34px;height:34px;border-radius:9px;background:{bg};display:flex;align-items:center;justify-content:center">'
-            f'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{stroke}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{icon}</svg></span>{text}</h3>')
+    # h3를 쓰면 Streamlit이 안에 span과 링크 아이콘을 끼워 넣어 아이콘·글자가 위아래로 갈라진다 → div로 그린다
+    return (f'<div role="heading" aria-level="3" style="margin:0 0 12px;display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;color:#0F1B2D">'
+            f'<span class="{anim}" style="flex:none;width:34px;height:34px;border-radius:9px;background:{bg};display:flex;align-items:center;justify-content:center">'
+            f'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{stroke}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{icon}</svg></span>{text}</div>')
 
 
 ICON_SUN = '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M5 19l1.4-1.4M17.6 6.4L19 5"></path>'
@@ -124,7 +125,7 @@ def compare_row(rank: int, item: dict) -> str:
 </div>"""
 
 
-COMPARE_HEAD = """<div style="display:grid;grid-template-columns:44px 1.5fr .8fr 1fr 2fr .8fr;gap:12px;padding:14px 20px;background:#EEF2F7;font-size:14px;font-weight:700;color:#4A5568;border-radius:18px 18px 0 0">
+COMPARE_HEAD = """<div class="dc-cmp-head" style="display:grid;grid-template-columns:44px 1.5fr .8fr 1fr 2fr .8fr;gap:12px;padding:14px 20px;background:#EEF2F7;font-size:14px;font-weight:700;color:#4A5568;border-radius:18px 18px 0 0">
 <span>순위</span><span>편명 · 항공사</span><span>평소 출발</span><span>과거 지연율</span><span>예상 지연 확률</span><span>예측 상태</span></div>"""
 
 
