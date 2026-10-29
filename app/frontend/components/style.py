@@ -148,6 +148,11 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .card:hover, .st-key-chart_card:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(11,37,69,.12); }
 /* 그래프: 막대가 아래에서 위로 자라난다 */
 [data-testid="stVegaLiteChart"], [data-testid="stArrowVegaLiteChart"] { animation: dc-rise 1s cubic-bezier(.2,.8,.2,1) .25s both; }
+/* 그래프 도구: 'PNG로 내려받기'만 남기고 늘 보이게. 전체 화면·데이터 보기·코드 복사는 숨긴다 */
+[data-testid="stElementToolbar"] button[aria-label="Fullscreen"], [data-testid="stElementToolbar"] button[aria-label="Show data"],
+[data-testid="stElementToolbar"] button[aria-label="Copy Vega-Lite spec"] { display: none !important; }
+/* 넓은 홈 그래프만 늘 보이게 (좁은 결과 카드에서는 막대를 가려서 마우스를 올릴 때만) */
+.st-key-chart_card:not([data-testid="stColumn"] *) [data-testid="stElementToolbar"]:has(button[aria-label="Download as PNG"]) { opacity: 1 !important; }
 
 /* 결과 요약: 카드가 올라오고, 지연 확률 숫자가 0부터 올라가고, 단계 막대 동그라미가 미끄러진다 */
 .dc-summary { animation: dc-up .6s cubic-bezier(.2,.8,.2,1) both; margin-bottom: 12px; }

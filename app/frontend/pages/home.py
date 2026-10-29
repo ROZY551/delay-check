@@ -8,7 +8,7 @@ from backend.weather import KST
 from backend.services import get_predictor, run_prediction, today_kst
 from frontend.components import cards
 from frontend.components.charts import hourly_chart
-from frontend.components.hero import DATA_PERIOD, hero_html, hour_kr
+from frontend.components.hero import DATA_PERIOD, hero_html
 from frontend.components.style import footer, header
 
 p = get_predictor()
@@ -110,12 +110,10 @@ else:
 
     st.markdown('<div style="height:40px"></div>', unsafe_allow_html=True)
     with st.container(key="chart_card", border=False):
-        hi = max(p.hourly, key=p.hourly.get)
-        lo = min(p.hourly, key=p.hourly.get)
+        # 몇 시인지는 아래 축에, 비율은 막대에 마우스를 올리면 나온다 → 설명 줄은 짧게
         st.markdown(cards._title("시간대별 평균 지연 비율", "#0E9384", cards.ICON_BARS)
                     + f'<span style="font-size:15px;color:#4A5568">인천공항 출발편 {DATA_PERIOD} · 전체 평균 {p.prior*100:.1f}% · '
-                      f'<b style="color:#C2410C">■</b> 가장 높음 {hour_kr(hi)} {p.hourly[hi]*100:.1f}% · '
-                      f'<b style="color:#1D5FD1">■</b> 가장 낮음 {hour_kr(lo)} {p.hourly[lo]*100:.1f}%</span>',
+                      '<b style="color:#C2410C">■</b> 가장 높음 · <b style="color:#1D5FD1">■</b> 가장 낮음</span>',
                     unsafe_allow_html=True)
         st.altair_chart(hourly_chart(p.hourly, mark_extremes=True, height=170), use_container_width=True)
 
