@@ -25,4 +25,5 @@ def hourly_chart(hourly: dict[int, float], highlight: int | None = None, height:
         )
         .properties(height=height)
         .configure_view(strokeWidth=0)
+        .configure(background="transparent")          # 흰 카드 위에 회색 상자가 한 겹 더 생기지 않게
     )

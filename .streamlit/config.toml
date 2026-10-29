@@ -2,7 +2,7 @@
 base = "light"
 primaryColor = "#FFB81C"
 backgroundColor = "#E6ECF4"
-secondaryBackgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F1F4F9"
 textColor = "#0F1B2D"
 
 [client]

@@ -41,7 +41,16 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 [data-testid="stPageLink"] a p { font-size: 16px; font-weight: 800; color: #2D3748; }
 .st-key-nav_active [data-testid="stPageLink"] a { background: %(navy)s; }
 .st-key-nav_active [data-testid="stPageLink"] a p, .st-key-nav_active [data-testid="stIconMaterial"] { color: #FFFFFF; }
-.st-key-nav { background: #EEF2F7; border-radius: 14px; padding: 4px; }
+/* 메뉴: 회색 띠 안에 같은 너비의 칸 3개. 선택·마우스 올림 표시는 칸을 꽉 채운다 (뜨지 않음) */
+/* Streamlit이 띠·칸 높이를 고정해 두면 44px 링크가 위아래로 삐져나온다 → 높이를 내용에 맞춘다 */
+.st-key-nav { background: #EEF2F7; border-radius: 14px; padding: 4px; gap: 4px !important; flex-wrap: nowrap !important;
+  height: auto !important; min-height: 0 !important; align-items: stretch !important; }
+.st-key-nav > * { flex: 1 1 0 !important; min-width: 0 !important; width: auto !important; height: auto !important; }
+.st-key-nav [class*="st-key-nav_"] { height: auto !important; min-height: 0 !important; gap: 0 !important; }
+.st-key-nav [data-testid="stElementContainer"], .st-key-nav [data-testid="stPageLink"],
+.st-key-nav [data-testid="stPageLink"] > div { width: 100%% !important; margin: 0; }
+.st-key-nav [data-testid="stPageLink"] a { display: flex; justify-content: center; align-items: center; width: 100%%;
+  height: 44px; margin: 0; padding: 0 10px; border-radius: 10px; box-sizing: border-box; }
 
 /* 버튼 */
 .stButton button[kind="primary"], .stFormSubmitButton button[kind="primaryFormSubmit"] {
@@ -52,17 +61,37 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .stButton button[kind="secondary"] p, .stFormSubmitButton button[kind="secondaryFormSubmit"] p { font-size: 16px; font-weight: 700; }
 
 /* 입력 (날짜·시각 칸은 <input>이 아니라 role="group" 안의 글자 조각으로 그려진다) */
-.stTextInput input, .stDateInput input, .stTimeInput input, .stSelectbox div[data-baseweb="select"] > div {
-  min-height: 52px; font-size: 18px; font-weight: 700; border-radius: 12px; }
+/* 회색 칸(기본 40px)은 52px로 키우고, 안쪽 글자는 넘치지 않게 칸 가운데에 둔다 */
+[data-testid="stTextInput"] .react-aria-TextField > div, [data-testid="stDateInput"] > div > div,
+[data-testid="stTimeInput"] > div > div { height: 52px !important; min-height: 52px; border-radius: 12px; align-items: center; }
+[data-testid="stTextInput"] input { height: 100%% !important; min-height: 0 !important; font-size: 18px; font-weight: 700; }
+[data-testid="stDateInput"] [role="group"], [data-testid="stTimeInput"] [role="group"] {
+  min-height: 0 !important; height: auto !important; padding-top: 0 !important; padding-bottom: 0 !important; }
 [data-testid="stDateInput"] [role="group"], [data-testid="stTimeInput"] [role="group"],
-[data-testid="stDateInput"] [role="group"] *, [data-testid="stTimeInput"] [role="group"] *,
-[data-testid="stSelectbox"] input { font-size: 18px !important; font-weight: 700; min-height: 40px; }
+[data-testid="stDateInput"] [role="group"] *, [data-testid="stTimeInput"] [role="group"] * {
+  font-size: 18px !important; font-weight: 700; min-height: 0 !important; line-height: 1.3 !important; }
+[data-testid="stSelectbox"] input { font-size: 18px !important; font-weight: 700; }
+[data-testid="stSelectbox"] [data-baseweb="select"] > div, [data-testid="stSelectbox"] > div > div { min-height: 52px; border-radius: 12px; }
 [data-testid="stWidgetLabel"] p { font-size: 16px !important; font-weight: 700; color: #2D3748; }
 [data-testid="stCheckbox"] [data-testid="stWidgetLabel"] p { font-size: 15px !important; font-weight: 500; }
 .st-key-flight_no input { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 800; text-transform: uppercase; }
 
 /* 카드 */
 .card { background: #FFFFFF; border-radius: 18px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(11,37,69,.06); }
+/* 한 줄에 놓인 카드들(결과 '자세히 보기')은 높이를 맞춘다 */
+[data-testid="stColumn"]:has(.card, .st-key-chart_card) > [data-testid="stVerticalBlock"] { height: 100%%; }
+[data-testid="stColumn"] [data-testid="stElementContainer"]:has(.card),
+[data-testid="stColumn"] [data-testid="stLayoutWrapper"]:has(> .st-key-chart_card) { flex: 1 1 auto; display: flex; flex-direction: column; }
+[data-testid="stColumn"] [data-testid="stElementContainer"]:has(.card) > *,
+[data-testid="stColumn"] [data-testid="stElementContainer"]:has(.card) [data-testid="stMarkdownContainer"],
+[data-testid="stColumn"] .card, [data-testid="stColumn"] .st-key-chart_card { flex: 1 1 auto; box-sizing: border-box; }
+[data-testid="stColumn"] [data-testid="stMarkdown"]:has(.card),
+[data-testid="stColumn"] [data-testid="stMarkdown"]:has(.card) > div { display: flex; flex-direction: column; flex: 1 1 auto; }
+[data-testid="stColumn"] [data-testid="stMarkdownContainer"]:has(> .card) { display: flex; flex-direction: column; margin-bottom: 0 !important; }
+/* 로그인·회원가입 카드: 아래 링크는 가운데, '중복 확인'은 옆 입력칸과 같은 높이 */
+.st-key-auth_card [data-testid="stElementContainer"]:has([data-testid="stPageLink"]), .st-key-auth_card [data-testid="stPageLink"],
+.st-key-auth_card [data-testid="stPageLink"] > div, .st-key-auth_card [data-testid="stPageLink"] a { width: 100%% !important; justify-content: center; }
+.st-key-auth_card .stFormSubmitButton button[kind="secondaryFormSubmit"] { min-height: 52px; }
 .st-key-search_card { background: #FFFFFF; border-radius: 20px; padding: 20px 26px 8px; margin: -96px 36px 0;
   width: calc(100%% - 72px) !important; position: relative; z-index: 5; box-shadow: 0 12px 32px rgba(11,37,69,.14); }
 @media (max-width: 640px) {
@@ -94,8 +123,8 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stSideb
 .st-key-logo button:hover p::after { animation: none; transform: translate(8px, -8px); transition: transform .3s; }
 /* 메뉴: 마우스를 올리면 배경이 차오르고, 지금 메뉴는 살짝 튀어나온다 */
 [data-testid="stPageLink"] a { transition: background .25s, transform .2s; }
-.st-key-nav [data-testid="stPageLink"] a:hover { background: #DDE5F0; transform: translateY(-2px); }
-.st-key-nav_active [data-testid="stPageLink"] a { animation: dc-pop .4s ease both; }
+.st-key-nav [data-testid="stPageLink"] a:hover { background: #DDE5F0; }
+.st-key-nav_active [data-testid="stPageLink"] a { animation: dc-fade .35s ease both; box-shadow: 0 2px 8px rgba(11,37,69,.18); }
 .st-key-nav_active [data-testid="stPageLink"] a:hover { background: %(navy)s; }
 /* 노란 버튼: 올리면 떠오르고 빛이 한 번 지나간다, 누르면 눌린다 */
 .stButton button, .stFormSubmitButton button { transition: transform .18s, box-shadow .18s, background .2s; }
